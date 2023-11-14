@@ -1,16 +1,26 @@
 <script>
+	import PopOver from '$lib/components/popOver.svelte';
 	// thought is would be better to seperate into different arrays to avoid unecessary for each reads.
 	let todos = [];
+	let openCreateState = false;
+	let editCreateState = false;
 	let pending = [];
 	let completed = [];
 	let inputValue = '';
-	let notify = '';
+    let isInEditMode = false;
 	let shake = false;
 	let pulse = false;
 
 	// handle input change
 	function handleInput(event) {
 		inputValue = event.target.value;
+	}
+
+	// will require renaming
+	function handleKey(event) {
+		if (event.key === 'Enter') {
+			handleSubmit();
+		}
 	}
 
 	function startShakeAnimation() {
@@ -20,14 +30,14 @@
 
 	function startPulseAnimation() {
 		pulse = true;
-		setTimeout(() => (pulse = false), 10000);
+		setTimeout(() => (pulse = false), 500);
 	}
 
 	function handleSubmit() {
 		const isInTodos = todos.includes(inputValue);
 		const isInPending = pending.includes(inputValue);
 		const isInCompleted = completed.includes(inputValue);
-		if (isInTodos || isInPending || isInCompleted) {
+		if (isInTodos || isInPending || isInCompleted || inputValue === '') {
 			startPulseAnimation();
 		} else {
 			todos = [...todos, inputValue];
@@ -57,30 +67,50 @@
 	<h1>Kanban</h1>
 </header>
 
+<!-- {#if editCreateState}
+	<PopOver state={editCreateState} />
+{/if} -->
+
 <div class="container">
 	<div class="board">
-		<h2>Todo</h2>
-		<hr />
-		<div class:pulse class="list-item">
-			<input
-				id="todo-input"
-				type="text"
-				on:input={handleInput}
-				bind:value={inputValue}
-				placeholder="add new item"
-			/>
-			<button on:click={handleSubmit}>&#43; </button>
+		<div class="board-head">
+			<h2>Todo</h2>
+			<button
+				on:click={() => {
+					return (openCreateState = !openCreateState);
+				}}>&#43;</button
+			>
 		</div>
+		<hr />
+		{#if openCreateState}
+			<div class:pulse id="input-area">
+				<input
+					id="todo-input"
+					type="text"
+					on:input={handleInput}
+					on:keydown={handleKey}
+					bind:value={inputValue}
+					placeholder="name of todo"
+				/>
+				<button on:click={handleSubmit}>Add </button>
+			</div>
+		{/if}
 		<div class="list-container">
 			<div class="list">
 				{#if todos.length > 0}
 					{#each todos as todo}
 						<div id={todo} class="list-item">
-							<p>
-								{todo}
-							</p>
-							<div>
-								<button>&#9998;</button>
+							<div class="list-item-title">
+								<p>
+									{todo}
+								</p>
+							</div>
+							<div class="list-button-container">
+								<button
+									on:click={() => {
+										return (editCreateState = !editCreateState);
+									}}>&#9998;</button
+								>
 
 								<button id={todo} on:click={onClickMoveToPedningState}>&#8594;</button>
 							</div>
@@ -92,7 +122,7 @@
 	</div>
 
 	<div class="board">
-		<h2>In Action</h2>
+		<h2>Doing</h2>
 		<hr />
 		<div class="list-container">
 			<div class="list">
@@ -102,7 +132,9 @@
 							<p>
 								{todo}
 							</p>
-							<button id={todo} on:click={onClickMoveToCompletedState}>&#10003;</button>
+							<div class="list-button-container">
+								<button id={todo} on:click={onClickMoveToCompletedState}>&#10003;</button>
+							</div>
 						</div>
 					{/each}
 				{/if}
@@ -121,7 +153,9 @@
 							<p>
 								{todo}
 							</p>
-							<button id={todo} on:click={onClickdDeleteTodo}>&#128465;</button>
+							<div class="list-button-container">
+								<button id={todo} on:click={onClickdDeleteTodo}>&#128465;</button>
+							</div>
 						</div>
 					{/each}
 				{/if}
@@ -163,13 +197,9 @@
 
 	.container {
 		display: grid;
-		grid-template-columns: 1fr 1fr 1fr;
+		grid-template-columns: 33% 33% 33%;
 		padding: 1rem;
 		column-gap: 1rem;
-	}
-
-	.input-container {
-		display: flex;
 	}
 
 	header {
@@ -179,7 +209,13 @@
 	.board {
 		padding: 0.5rem;
 		height: 20rem;
+		widows: 100%;
 		box-shadow: rgba(50, 50, 93, 0.25) 0px 2px 5px -1px, rgba(0, 0, 0, 0.3) 0px 1px 3px -1px;
+	}
+
+	.board-head {
+		display: flex;
+		justify-content: space-between;
 	}
 
 	.list-container {
@@ -193,11 +229,16 @@
 	}
 
 	.list-item {
-		margin-top: 0.5rem;
+		box-sizing: border-box;
+		margin-top: 0.2rem;
 		padding: 0.5rem;
+		border-radius: 5px;
+		box-shadow: rgba(0, 0, 0, 0.05) 0px 0px 0px 1px, rgb(209, 213, 219) 0px 0px 0px 1px inset;
+	}
+
+	#input-area {
 		display: flex;
-		justify-content: space-between;
-		box-shadow: rgba(50, 50, 93, 0.25) 0px 2px 5px -1px, rgba(0, 0, 0, 0.3) 0px 1px 3px -1px;
+		margin-top: 0.2rem;
 	}
 
 	.pulse {
@@ -246,8 +287,21 @@
 		}
 	}
 
+	.list-item-title > p {
+		white-space: nowrap;
+		overflow: hidden;
+		text-overflow: ellipsis;
+	}
+
+	.list-button-container {
+		width: 100%;
+		/* would not say best practice */
+		text-align: right;
+	}
+
 	button {
-		padding: 0.5rem 1rem;
+		height: 2rem;
+		padding: 0.5rem;
 		border: none;
 		border-radius: 0.5rem;
 		cursor: pointer;
