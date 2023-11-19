@@ -1,13 +1,8 @@
 <script>
-	import PopOver from '$lib/components/popOver.svelte';
-	// thought is would be better to seperate into different arrays to avoid unecessary for each reads.
-	let todos = [];
-	let openCreateState = false;
-	let editCreateState = false;
-	let pending = [];
-	let completed = [];
+	import ListItem from "../components/boardListItem.svelte";
+    export let clickHandler;
 	let inputValue = '';
-    let isInEditMode = false;
+	let isInEditMode = false;
 	let shake = false;
 	let pulse = false;
 
@@ -67,10 +62,6 @@
 	<h1>Kanban</h1>
 </header>
 
-<!-- {#if editCreateState}
-	<PopOver state={editCreateState} />
-{/if} -->
-
 <div class="container">
 	<div class="board">
 		<div class="board-head">
@@ -99,22 +90,7 @@
 			<div class="list">
 				{#if todos.length > 0}
 					{#each todos as todo}
-						<div id={todo} class="list-item">
-							<div class="list-item-title">
-								<p>
-									{todo}
-								</p>
-							</div>
-							<div class="list-button-container">
-								<button
-									on:click={() => {
-										return (editCreateState = !editCreateState);
-									}}>&#9998;</button
-								>
-
-								<button id={todo} on:click={onClickMoveToPedningState}>&#8594;</button>
-							</div>
-						</div>
+                        <ListItem id={todo} clickHandler={} />
 					{/each}
 				{/if}
 			</div>
@@ -197,9 +173,9 @@
 
 	.container {
 		display: grid;
-		grid-template-columns: 33% 33% 33%;
+		grid-template-columns: 32% 32% 32%;
+		grid-gap: 1rem;
 		padding: 1rem;
-		column-gap: 1rem;
 	}
 
 	header {
@@ -209,7 +185,6 @@
 	.board {
 		padding: 0.5rem;
 		height: 20rem;
-		widows: 100%;
 		box-shadow: rgba(50, 50, 93, 0.25) 0px 2px 5px -1px, rgba(0, 0, 0, 0.3) 0px 1px 3px -1px;
 	}
 

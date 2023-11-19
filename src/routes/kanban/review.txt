@@ -1,0 +1,5 @@
+This is a review of what I have done and what I would change going forward.
+
+I have made a simple kanban board which is essentially three todo lists that are past, present, imperfect.
+
+put some state on the item object, this would be beneficial to state changes for the entire lists instead of using logical assignment that is difficult to implement. 
